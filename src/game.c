@@ -1733,6 +1733,7 @@ LogoLevel(VOID)
     unsigned char pal[PAL_SIZE];
     unsigned char tempbuf[256];
     unsigned char *palook_bak = palookup[0];
+    UserInput uinfo = { FALSE, FALSE, dir_None };
     int i;
     
 
@@ -1788,7 +1789,8 @@ LogoLevel(VOID)
     while (TRUE)
         {
         handleevents();
-
+        CONTROL_GetUserInput(&uinfo);
+        CONTROL_ClearUserInput(&uinfo);
         if (quitevent) { QuitFlag = TRUE; break; }
     
         // taken from top of faketimerhandler
@@ -1798,7 +1800,7 @@ LogoLevel(VOID)
             ototalclock += synctics;
             }
 
-        if (totalclock > 5*120 || KeyPressed())
+        if (totalclock > 5*120 || KeyPressed() || uinfo.button0 || uinfo.button1)
             {
             break;
             }
@@ -2519,6 +2521,7 @@ BonusScreen(PLAYERp pp)
     int Tics = 0;
     int line = 0;
     BOOL BonusDone;
+    UserInput uinfo = { FALSE, FALSE, dir_None };
 
     if(Level < 0) Level = 0;
     
@@ -2557,7 +2560,9 @@ BonusScreen(PLAYERp pp)
             }
         ototalclock += limit;
         
-        if (KEY_PRESSED(KEYSC_SPACE) || KEY_PRESSED(KEYSC_ENTER))
+        CONTROL_GetUserInput(&uinfo);
+        CONTROL_ClearUserInput(&uinfo);
+        if (KEY_PRESSED(KEYSC_SPACE) || KEY_PRESSED(KEYSC_ENTER) || uinfo.button0 || uinfo.button1)
             {
             if (State >= s_BonusRest && State < &s_BonusRest[SIZ(s_BonusRest)])
                 {
@@ -5133,7 +5138,7 @@ getinput(SW_PACKET *loc)
     if (MenuInputMode || UsingMenus || ScrollMode2D || InputMode)
         return;
         
-    SET_LOC_KEY(loc->bits, SK_SPACE_BAR, !!KEY_PRESSED(KEYSC_SPACE));
+    SET_LOC_KEY(loc->bits, SK_SPACE_BAR, (!!KEY_PRESSED(KEYSC_SPACE) | BUTTON(gamefunc_Open)));
         
     running = BUTTON(gamefunc_Run) || TEST(pp->Flags, PF_LOCK_RUN);
         
